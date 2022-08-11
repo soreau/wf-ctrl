@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<wayfire>
+	<plugin name="wf-ctrl">
+		<_short>Control Protocol</_short>
+		<_long>Support for controlling views and the desktop.</_long>
+		<category>Utility</category>
+	</plugin>
+</wayfire>
