@@ -76,6 +76,21 @@
       <arg name="h" type="int" summary="height"/>
     </request>
 
+    <request name="ws_switch">
+      <description summary="get information about the selected view">
+	Get information about the selected view.
+      </description>
+      <arg name="direction" type="string" summary="direction"/>
+    </request>
+
+    <request name="ws_switch_abs">
+      <description summary="get information about the selected view">
+	Get information about the selected view.
+      </description>
+      <arg name="x" type="int" summary="X coordinate"/>
+      <arg name="y" type="int" summary="Y coordinate"/>
+    </request>
+
     <event name="ack">
       <description summary="lets client know a request was received">
 	This lets the client know when to quit.

@@ -184,14 +184,87 @@ static void resize(struct wl_client *client, struct wl_resource *resource, int v
     }
 }
 
+static wf::output_t *get_focused_output()
+{
+    auto point = wf::get_core().get_cursor_position();
+    for (auto& o : wf::get_core().output_layout->get_outputs())
+    {
+        auto rect = o->get_layout_geometry();
+        if (wlr_box_contains_point(&rect, point.x, point.y))
+        {
+            return o;
+        }
+    }
+
+    return nullptr;
+}
+
+static void ws_switch(struct wl_client *client, struct wl_resource *resource, const char *direction)
+{
+    wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
+
+    auto output = get_focused_output();
+
+    if (!output)
+    {
+        return;
+    }
+
+    auto ws = output->workspace->get_current_workspace();
+
+    if (!strcmp(direction, "up"))
+    {
+        output->workspace->request_workspace({ws.x, ws.y - 1});
+    }
+    else if (!strcmp(direction, "down"))
+    {
+        output->workspace->request_workspace({ws.x, ws.y + 1});
+    }
+    else if (!strcmp(direction, "left"))
+    {
+        output->workspace->request_workspace({ws.x - 1, ws.y});
+    }
+    else if (!strcmp(direction, "right"))
+    {
+        output->workspace->request_workspace({ws.x + 1, ws.y});
+    }
+
+    for (auto r : wd->client_resources)
+    {
+        wf_ctrl_base_send_ack(r);
+    }
+}
+
+static void ws_switch_abs(struct wl_client *client, struct wl_resource *resource, int x, int y)
+{
+    wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
+
+    wf::point_t ws{x, y};
+
+    auto output = get_focused_output();
+
+    if (!output)
+    {
+        return;
+    }
+
+    output->workspace->request_workspace(ws);
+    for (auto r : wd->client_resources)
+    {
+        wf_ctrl_base_send_ack(r);
+    }
+}
+
 static const struct wf_ctrl_base_interface wayfire_control_impl =
 {
-    .maximize   = maximize,
-    .unmaximize = unmaximize,
-    .minimize   = minimize,
-    .unminimize = unminimize,
-    .move       = move,
-    .resize     = resize
+    .maximize      = maximize,
+    .unmaximize    = unmaximize,
+    .minimize      = minimize,
+    .unminimize    = unminimize,
+    .move          = move,
+    .resize        = resize,
+    .ws_switch     = ws_switch,
+    .ws_switch_abs = ws_switch_abs
 };
 
 static void destroy_client(wl_resource *resource)

@@ -97,8 +97,10 @@ WfCtrl::WfCtrl(int argc, char *argv[])
     wf_ctrl_base_add_listener(wf_control_manager,
         &control_base_listener, this);
 
-    view_id = -1;
-    request_mask = 0;
+    int view_id = -1;
+    int request_mask = 0;
+    int x, y, w, h, ws_x, ws_y;
+    char *direction = NULL;
 
     struct option opts[] = {
         { "view-id",     required_argument, NULL, 'i' },
@@ -108,11 +110,12 @@ WfCtrl::WfCtrl(int argc, char *argv[])
         { "unmaximize",  no_argument,       NULL, 'x' },
         { "minimize",    no_argument,       NULL, 'N' },
         { "unminimize",  no_argument,       NULL, 'n' },
+        { "switch-ws",   required_argument, NULL, 'w' },
         { 0,             0,                 NULL,  0  }
     };
 
     int c, i;
-    while((c = getopt_long(argc, argv, "i:m:r:XxNn", opts, &i)) != -1)
+    while((c = getopt_long(argc, argv, "i:m:r:XxNnw:", opts, &i)) != -1)
     {
         switch(c)
         {
@@ -146,9 +149,29 @@ WfCtrl::WfCtrl(int argc, char *argv[])
                 request_mask |= REQUEST_UNMINIMIZE;
                 break;
 
+            case 'w':
+                if (sscanf(optarg, "%d,%d", &ws_x, &ws_y) != 2)
+                {
+                    direction = optarg;
+                }
+                request_mask |= REQUEST_WS_SWITCH;
+                break;
+
             default:
                 printf("Unsupported command line argument %s\n", optarg);
         }
+    }
+
+    if (request_mask & REQUEST_WS_SWITCH)
+    {
+        if (direction)
+        {
+            wf_ctrl_base_ws_switch(wf_control_manager, direction);
+        }
+        else
+        {
+            wf_ctrl_base_ws_switch_abs(wf_control_manager, ws_x, ws_y);
+	}
     }
 
     if (request_mask & REQUEST_MOVE)

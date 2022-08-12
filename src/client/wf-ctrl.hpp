@@ -33,6 +33,7 @@
 #define REQUEST_UNMAXIMIZE 1 << 4
 #define REQUEST_MINIMIZE   1 << 5
 #define REQUEST_UNMINIMIZE 1 << 6
+#define REQUEST_WS_SWITCH  1 << 7
 
 class WfCtrl
 {
@@ -43,7 +44,4 @@ class WfCtrl
     wl_display *display;
     wf_ctrl_base *wf_control_manager;
     int running;
-    int x, y, w, h;
-    int view_id;
-    int request_mask;
 };
