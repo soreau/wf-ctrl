@@ -31,6 +31,7 @@ class wayfire_control
 
   public:
     std::vector<wl_resource*> client_resources;
+    std::vector<wayfire_view> fixed_views;
     wayfire_control();
     ~wayfire_control();
 };

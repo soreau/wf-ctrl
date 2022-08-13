@@ -26,6 +26,7 @@
 #include <iostream>
 #include <string.h>
 #include <getopt.h>
+#include <vector>
 
 #include "wf-ctrl.hpp"
 
@@ -97,7 +98,7 @@ WfCtrl::WfCtrl(int argc, char *argv[])
     wf_ctrl_base_add_listener(wf_control_manager,
         &control_base_listener, this);
 
-    int view_id = -1;
+    std::vector<int> view_ids;
     int request_mask = 0;
     int x, y, w, h, ws_x, ws_y;
     char *direction = NULL;
@@ -120,7 +121,7 @@ WfCtrl::WfCtrl(int argc, char *argv[])
         switch(c)
         {
             case 'i':
-                view_id = atoi(optarg);
+                view_ids.push_back(atoi(optarg));
                 break;
 
             case 'm':
@@ -162,8 +163,28 @@ WfCtrl::WfCtrl(int argc, char *argv[])
         }
     }
 
+    for (auto view_id : view_ids)
+    {
+        if (request_mask & REQUEST_MOVE)
+            wf_ctrl_base_move(wf_control_manager, view_id, x, y);
+        if (request_mask & REQUEST_RESIZE)
+            wf_ctrl_base_resize(wf_control_manager, view_id, w, h);
+        if (request_mask & REQUEST_MAXIMIZE)
+            wf_ctrl_base_maximize(wf_control_manager, view_id);
+        if (request_mask & REQUEST_UNMAXIMIZE)
+            wf_ctrl_base_unmaximize(wf_control_manager, view_id);
+        if (request_mask & REQUEST_MINIMIZE)
+            wf_ctrl_base_minimize(wf_control_manager, view_id);
+        if (request_mask & REQUEST_UNMINIMIZE)
+            wf_ctrl_base_unminimize(wf_control_manager, view_id);
+    }
+
     if (request_mask & REQUEST_WS_SWITCH)
     {
+        for (auto view_id : view_ids)
+        {
+            wf_ctrl_base_ws_switch_view_append(wf_control_manager, view_id);
+        }
         if (direction)
         {
             wf_ctrl_base_ws_switch(wf_control_manager, direction);
@@ -171,21 +192,8 @@ WfCtrl::WfCtrl(int argc, char *argv[])
         else
         {
             wf_ctrl_base_ws_switch_abs(wf_control_manager, ws_x, ws_y);
-	}
+        }
     }
-
-    if (request_mask & REQUEST_MOVE)
-        wf_ctrl_base_move(wf_control_manager, view_id, x, y);
-    if (request_mask & REQUEST_RESIZE)
-        wf_ctrl_base_resize(wf_control_manager, view_id, w, h);
-    if (request_mask & REQUEST_MAXIMIZE)
-        wf_ctrl_base_maximize(wf_control_manager, view_id);
-    if (request_mask & REQUEST_UNMAXIMIZE)
-        wf_ctrl_base_unmaximize(wf_control_manager, view_id);
-    if (request_mask & REQUEST_MINIMIZE)
-        wf_ctrl_base_minimize(wf_control_manager, view_id);
-    if (request_mask & REQUEST_UNMINIMIZE)
-        wf_ctrl_base_unminimize(wf_control_manager, view_id);
 
     running = 1;
     while(running)

@@ -76,6 +76,13 @@
       <arg name="h" type="int" summary="height"/>
     </request>
 
+    <request name="ws_switch_view_append">
+      <description summary="get information about the selected view">
+	Get information about the selected view.
+      </description>
+      <arg name="view_id" type="int" summary="view ID"/>
+    </request>
+
     <request name="ws_switch">
       <description summary="get information about the selected view">
 	Get information about the selected view.

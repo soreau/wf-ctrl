@@ -199,6 +199,20 @@ static wf::output_t *get_focused_output()
     return nullptr;
 }
 
+static void ws_switch_view_append(struct wl_client *client, struct wl_resource *resource, int view_id)
+{
+    wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
+
+    wayfire_view view = view_from_id(view_id);
+
+    if (!view)
+    {
+        return;
+    }
+
+    wd->fixed_views.push_back(view);
+}
+
 static void ws_switch(struct wl_client *client, struct wl_resource *resource, const char *direction)
 {
     wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
@@ -212,22 +226,54 @@ static void ws_switch(struct wl_client *client, struct wl_resource *resource, co
 
     auto ws = output->workspace->get_current_workspace();
 
+    wayfire_view view;
+
     if (!strcmp(direction, "up"))
     {
-        output->workspace->request_workspace({ws.x, ws.y - 1});
+        if (wd->fixed_views.empty())
+        {
+            output->workspace->request_workspace({ws.x, ws.y - 1});
+        }
+        else
+        {
+            output->workspace->request_workspace({ws.x, ws.y - 1}, wd->fixed_views);
+        }
     }
     else if (!strcmp(direction, "down"))
     {
-        output->workspace->request_workspace({ws.x, ws.y + 1});
+        if (wd->fixed_views.empty())
+        {
+            output->workspace->request_workspace({ws.x, ws.y + 1});
+        }
+        else
+        {
+            output->workspace->request_workspace({ws.x, ws.y + 1}, wd->fixed_views);
+        }
     }
     else if (!strcmp(direction, "left"))
     {
-        output->workspace->request_workspace({ws.x - 1, ws.y});
+        if (wd->fixed_views.empty())
+        {
+            output->workspace->request_workspace({ws.x - 1, ws.y});
+        }
+        else
+        {
+            output->workspace->request_workspace({ws.x - 1, ws.y}, wd->fixed_views);
+        }
     }
     else if (!strcmp(direction, "right"))
     {
-        output->workspace->request_workspace({ws.x + 1, ws.y});
+        if (wd->fixed_views.empty())
+        {
+            output->workspace->request_workspace({ws.x + 1, ws.y});
+        }
+        else
+        {
+            output->workspace->request_workspace({ws.x + 1, ws.y}, wd->fixed_views);
+        }
     }
+
+    wd->fixed_views.clear();
 
     for (auto r : wd->client_resources)
     {
@@ -248,7 +294,19 @@ static void ws_switch_abs(struct wl_client *client, struct wl_resource *resource
         return;
     }
 
-    output->workspace->request_workspace(ws);
+    wayfire_view view;
+
+    if (wd->fixed_views.empty())
+    {
+        output->workspace->request_workspace(ws);
+    }
+    else
+    {
+        output->workspace->request_workspace(ws, wd->fixed_views);
+    }
+
+    wd->fixed_views.clear();
+
     for (auto r : wd->client_resources)
     {
         wf_ctrl_base_send_ack(r);
@@ -257,14 +315,15 @@ static void ws_switch_abs(struct wl_client *client, struct wl_resource *resource
 
 static const struct wf_ctrl_base_interface wayfire_control_impl =
 {
-    .maximize      = maximize,
-    .unmaximize    = unmaximize,
-    .minimize      = minimize,
-    .unminimize    = unminimize,
-    .move          = move,
-    .resize        = resize,
-    .ws_switch     = ws_switch,
-    .ws_switch_abs = ws_switch_abs
+    .maximize                = maximize,
+    .unmaximize              = unmaximize,
+    .minimize                = minimize,
+    .unminimize              = unminimize,
+    .move                    = move,
+    .resize                  = resize,
+    .ws_switch_view_append   = ws_switch_view_append,
+    .ws_switch               = ws_switch,
+    .ws_switch_abs           = ws_switch_abs
 };
 
 static void destroy_client(wl_resource *resource)
