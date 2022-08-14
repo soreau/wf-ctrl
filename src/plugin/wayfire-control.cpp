@@ -148,6 +148,31 @@ static void unminimize(struct wl_client *client, struct wl_resource *resource, i
     }
 }
 
+static void focus(struct wl_client *client, struct wl_resource *resource, int view_id)
+{
+    wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
+
+    wayfire_view view = view_from_id(view_id);
+
+    if (!view)
+    {
+        return;
+    }
+
+    auto output = view->get_output();
+
+    if (!output)
+    {
+        return;
+    }
+
+    output->focus_view(view, true);
+    for (auto r : wd->client_resources)
+    {
+        wf_ctrl_base_send_ack(r);
+    }
+}
+
 static void move(struct wl_client *client, struct wl_resource *resource, int view_id, int x, int y)
 {
     wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
@@ -304,6 +329,7 @@ static const struct wf_ctrl_base_interface wayfire_control_impl =
     .unmaximize              = unmaximize,
     .minimize                = minimize,
     .unminimize              = unminimize,
+    .focus                   = focus,
     .move                    = move,
     .resize                  = resize,
     .ws_switch_view_append   = ws_switch_view_append,

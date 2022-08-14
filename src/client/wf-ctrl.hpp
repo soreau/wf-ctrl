@@ -34,6 +34,7 @@
 #define REQUEST_MINIMIZE   1 << 5
 #define REQUEST_UNMINIMIZE 1 << 6
 #define REQUEST_WS_SWITCH  1 << 7
+#define REQUEST_FOCUS      1 << 8
 
 class WfCtrl
 {

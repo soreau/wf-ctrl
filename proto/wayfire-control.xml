@@ -58,6 +58,13 @@
       <arg name="view_id" type="int" summary="view ID"/>
     </request>
 
+    <request name="focus">
+      <description summary="get information about the selected view">
+	Get information about the selected view.
+      </description>
+      <arg name="view_id" type="int" summary="view ID"/>
+    </request>
+
     <request name="move">
       <description summary="get information about the selected view">
 	Get information about the selected view.
