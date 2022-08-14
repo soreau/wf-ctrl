@@ -112,12 +112,13 @@ WfCtrl::WfCtrl(int argc, char *argv[])
         { "minimize",    no_argument,       NULL, 'N' },
         { "unminimize",  no_argument,       NULL, 'n' },
         { "focus",       no_argument,       NULL, 'f' },
+        { "close",       no_argument,       NULL, 'c' },
         { "switch-ws",   required_argument, NULL, 'w' },
         { 0,             0,                 NULL,  0  }
     };
 
     int c, i;
-    while((c = getopt_long(argc, argv, "i:m:r:XxNnfw:", opts, &i)) != -1)
+    while((c = getopt_long(argc, argv, "i:m:r:XxNnfcw:", opts, &i)) != -1)
     {
         switch(c)
         {
@@ -155,6 +156,10 @@ WfCtrl::WfCtrl(int argc, char *argv[])
                 request_mask |= REQUEST_FOCUS;
                 break;
 
+            case 'c':
+                request_mask |= REQUEST_CLOSE;
+                break;
+
             case 'w':
                 if (sscanf(optarg, "%d,%d", &ws_x, &ws_y) != 2)
                 {
@@ -184,6 +189,8 @@ WfCtrl::WfCtrl(int argc, char *argv[])
             wf_ctrl_base_unminimize(wf_control_manager, view_id);
         if (request_mask & REQUEST_FOCUS)
             wf_ctrl_base_focus(wf_control_manager, view_id);
+        if (request_mask & REQUEST_CLOSE)
+            wf_ctrl_base_close(wf_control_manager, view_id);
     }
 
     if (request_mask & REQUEST_WS_SWITCH)
