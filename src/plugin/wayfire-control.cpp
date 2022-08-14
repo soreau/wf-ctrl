@@ -184,21 +184,6 @@ static void resize(struct wl_client *client, struct wl_resource *resource, int v
     }
 }
 
-static wf::output_t *get_focused_output()
-{
-    auto point = wf::get_core().get_cursor_position();
-    for (auto& o : wf::get_core().output_layout->get_outputs())
-    {
-        auto rect = o->get_layout_geometry();
-        if (wlr_box_contains_point(&rect, point.x, point.y))
-        {
-            return o;
-        }
-    }
-
-    return nullptr;
-}
-
 static void ws_switch_view_append(struct wl_client *client, struct wl_resource *resource, int view_id)
 {
     wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
@@ -217,7 +202,7 @@ static void ws_switch(struct wl_client *client, struct wl_resource *resource, co
 {
     wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
 
-    auto output = get_focused_output();
+    auto output = wf::get_core().get_active_output();
 
     if (!output)
     {
@@ -287,7 +272,7 @@ static void ws_switch_abs(struct wl_client *client, struct wl_resource *resource
 
     wf::point_t ws{x, y};
 
-    auto output = get_focused_output();
+    auto output = wf::get_core().get_active_output();
 
     if (!output)
     {
