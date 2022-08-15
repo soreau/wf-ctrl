@@ -27,4 +27,6 @@ $ wf-ctrl -i xxxxxxxxx --focus
 $ wf-ctrl -i $(wf-info|grep "View ID"|awk '{print $3}') --minimize
 # Specify multiple view ids
 wf-ctrl -i xxxxxxxxx -i xxxxxxxxx -i xxxxxxxxx --switch-ws 1,0
+# Close focused view
+wf-ctrl -i -1 --close
 ```

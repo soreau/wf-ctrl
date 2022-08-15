@@ -63,11 +63,16 @@ wayfire_control::~wayfire_control()
     wl_global_destroy(manager);
 }
 
-wayfire_view view_from_id(uint32_t id)
+wayfire_view view_from_id(int32_t id)
 {
+    if (id == -1)
+    {
+        return wf::get_core().get_active_output()->get_active_view();
+    }
+
     for (auto& view : wf::get_core().get_all_views())
     {
-        if (view->get_id() == id)
+        if (int32_t(view->get_id()) == id)
         {
             return view;
         }
