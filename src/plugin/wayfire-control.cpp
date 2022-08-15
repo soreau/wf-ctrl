@@ -77,7 +77,7 @@ wayfire_view view_from_id(int32_t id)
             return view;
         }
     }
-    
+
     return nullptr;
 }
 
