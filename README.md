@@ -22,6 +22,9 @@ $ wf-ctrl -i xxxxxxxxx --move 954,384
 $ wf-ctrl -i xxxxxxxxx --resize 1024,768
 $ wf-ctrl -i xxxxxxxxx --unminimize
 $ wf-ctrl -i xxxxxxxxx --maximize
+$ wf-ctrl -i xxxxxxxxx --focus
 # Get ID from wf-info
 $ wf-ctrl -i $(wf-info|grep "View ID"|awk '{print $3}') --minimize
+# Specify multiple view ids
+wf-ctrl -i xxxxxxxxx -i xxxxxxxxx -i xxxxxxxxx --switch-ws 1,0
 ```
