@@ -19,7 +19,7 @@ Run `wf-ctrl` and pass the view ID with -i. You can find the view ID with wf-inf
 
 ```
 $ wf-ctrl -i xxxxxxxxx --move 954,384
-$ wf-ctrl -i xxxxxxxxx --resize 1024,768
+$ wf-ctrl -i xxxxxxxxx --resize 1024x768
 $ wf-ctrl -i xxxxxxxxx --unminimize
 $ wf-ctrl -i xxxxxxxxx --maximize
 $ wf-ctrl -i xxxxxxxxx --focus
