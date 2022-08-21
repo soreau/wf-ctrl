@@ -134,6 +134,28 @@
       <arg name="key" type="string" summary="key"/>
     </request>
 
+    <request name="buttonstroke">
+      <description summary="get information about the selected view">
+	Get information about the selected view.
+      </description>
+      <arg name="button" type="string" summary="button"/>
+      <arg name="delay" type="int" summary="delay"/>
+    </request>
+
+    <request name="buttondown">
+      <description summary="get information about the selected view">
+	Get information about the selected view.
+      </description>
+      <arg name="button" type="string" summary="button"/>
+    </request>
+
+    <request name="buttonup">
+      <description summary="get information about the selected view">
+	Get information about the selected view.
+      </description>
+      <arg name="button" type="string" summary="button"/>
+    </request>
+
     <event name="ack">
       <description summary="lets client know a request was received">
 	This lets the client know when to quit.

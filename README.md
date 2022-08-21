@@ -31,4 +31,6 @@ $ wf-ctrl -i xxxxxxxxx -i xxxxxxxxx -i xxxxxxxxx --switch-ws 1,0
 $ wf-ctrl -i -1 --close
 # Simulate key event (from [here](https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h) without the KEY_ prefix)
 $ wf-ctrl key -k A
+# Simulate button event (same as key but without the BTN_ prefix)
+$ wf-ctrl button -b LEFT
 ```

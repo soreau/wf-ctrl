@@ -459,6 +459,92 @@ static void keyup(struct wl_client *client, struct wl_resource *resource, const 
     }
 }
 
+static void buttonstroke(struct wl_client *client, struct wl_resource *resource, const char *button, int delay)
+{
+    wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
+
+    int buttoncode = libevdev_event_code_from_name(EV_KEY, (std::string("BTN_") + button).c_str());
+    wlr_event_pointer_button ev;
+
+    if (buttoncode == -1)
+    {
+        return;
+    }
+    ev.device    = wd->pointer;
+    ev.button    = buttoncode;
+    ev.state     = WLR_BUTTON_PRESSED;
+    ev.time_msec = wf::get_current_time();
+    wl_signal_emit(&wd->pointer->pointer->events.button, &ev);
+    wl_signal_emit(&wd->pointer->pointer->events.frame, NULL);
+
+    wd->button_stroke_delay.set_timeout(delay, [=] ()
+    {
+        wlr_event_pointer_button ev;
+        ev.device    = wd->pointer;
+        ev.button    = buttoncode;
+        ev.state     = WLR_BUTTON_RELEASED;
+        ev.time_msec = wf::get_current_time();
+        wl_signal_emit(&wd->pointer->pointer->events.button, &ev);
+        wl_signal_emit(&wd->pointer->pointer->events.frame, NULL);
+        return false;
+    });
+
+    for (auto r : wd->client_resources)
+    {
+        wf_ctrl_base_send_ack(r);
+    }
+}
+
+static void buttondown(struct wl_client *client, struct wl_resource *resource, const char *button)
+{
+    wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
+
+    int buttoncode = libevdev_event_code_from_name(EV_KEY, (std::string("BTN_") + button).c_str());
+    wlr_event_pointer_button ev;
+
+    if (buttoncode == -1)
+    {
+        return;
+    }
+
+    ev.device    = wd->pointer;
+    ev.button    = buttoncode;
+    ev.state     = WLR_BUTTON_PRESSED;
+    ev.time_msec = wf::get_current_time();
+    wl_signal_emit(&wd->pointer->pointer->events.button, &ev);
+    wl_signal_emit(&wd->pointer->pointer->events.frame, NULL);
+
+    for (auto r : wd->client_resources)
+    {
+        wf_ctrl_base_send_ack(r);
+    }
+}
+
+static void buttonup(struct wl_client *client, struct wl_resource *resource, const char *button)
+{
+    wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
+
+    int buttoncode = libevdev_event_code_from_name(EV_KEY, (std::string("BTN_") + button).c_str());
+    wlr_event_pointer_button ev;
+
+    if (buttoncode == -1)
+    {
+        return;
+    }
+
+    ev.device    = wd->pointer;
+    ev.button    = buttoncode;
+    ev.state     = WLR_BUTTON_RELEASED;
+    ev.time_msec = wf::get_current_time();
+    wl_signal_emit(&wd->pointer->pointer->events.button, &ev);
+    wl_signal_emit(&wd->pointer->pointer->events.frame, NULL);
+
+    for (auto r : wd->client_resources)
+    {
+        wf_ctrl_base_send_ack(r);
+    }
+}
+
 static const struct wf_ctrl_base_interface wayfire_control_impl =
 {
     .maximize                = maximize,
@@ -474,7 +560,10 @@ static const struct wf_ctrl_base_interface wayfire_control_impl =
     .ws_switch_abs           = ws_switch_abs,
     .keystroke               = keystroke,
     .keydown                 = keydown,
-    .keyup                   = keyup
+    .keyup                   = keyup,
+    .buttonstroke            = buttonstroke,
+    .buttondown              = buttondown,
+    .buttonup                = buttonup
 };
 
 static void destroy_client(wl_resource *resource)

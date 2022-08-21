@@ -39,4 +39,5 @@ class wayfire_control
     wlr_input_device *pointer;
     wlr_input_device *keyboard;
     wf::wl_timer keyboard_stroke_delay;
+    wf::wl_timer button_stroke_delay;
 };
