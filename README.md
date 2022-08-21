@@ -33,4 +33,6 @@ $ wf-ctrl -i -1 --close
 $ wf-ctrl key -k A
 # Simulate button event (same as key but without the BTN_ prefix)
 $ wf-ctrl button -b LEFT
+# Move the mouse
+$ wf-ctrl mousemove -m 100,100
 ```

@@ -51,3 +51,4 @@ class WfCtrl
 
 void do_key(WfCtrl *, int argc, char *argv[]);
 void do_button(WfCtrl *, int argc, char *argv[]);
+void do_mousemove(WfCtrl *, int argc, char *argv[]);

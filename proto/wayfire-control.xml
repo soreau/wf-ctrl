@@ -156,6 +156,14 @@
       <arg name="button" type="string" summary="button"/>
     </request>
 
+    <request name="mousemove">
+      <description summary="get information about the selected view">
+	Get information about the selected view.
+      </description>
+      <arg name="x" type="int" summary="x"/>
+      <arg name="y" type="int" summary="y"/>
+    </request>
+
     <event name="ack">
       <description summary="lets client know a request was received">
 	This lets the client know when to quit.

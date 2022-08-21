@@ -122,9 +122,15 @@ WfCtrl::WfCtrl(int argc, char *argv[])
     {
         do_key(this, argc, argv);
         return;
-    } else if (!strcmp(argv[1], "button"))
+    }
+    else if (!strcmp(argv[1], "button"))
     {
         do_button(this, argc, argv);
+        return;
+    }
+    else if (!strcmp(argv[1], "mousemove"))
+    {
+        do_mousemove(this, argc, argv);
         return;
     }
 

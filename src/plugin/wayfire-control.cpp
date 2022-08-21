@@ -545,6 +545,26 @@ static void buttonup(struct wl_client *client, struct wl_resource *resource, con
     }
 }
 
+static void mousemove(struct wl_client *client, struct wl_resource *resource, int x, int y)
+{
+    wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
+
+    auto cursor = wf::get_core().get_cursor_position();
+
+    wlr_event_pointer_motion ev;
+    ev.device    = wd->pointer;
+    ev.time_msec = wf::get_current_time();
+    ev.delta_x   = ev.unaccel_dx = x - cursor.x;
+    ev.delta_y   = ev.unaccel_dy = y - cursor.y;
+    wl_signal_emit(&wd->pointer->pointer->events.motion, &ev);
+    wl_signal_emit(&wd->pointer->pointer->events.frame, NULL);
+
+    for (auto r : wd->client_resources)
+    {
+        wf_ctrl_base_send_ack(r);
+    }
+}
+
 static const struct wf_ctrl_base_interface wayfire_control_impl =
 {
     .maximize                = maximize,
@@ -563,7 +583,8 @@ static const struct wf_ctrl_base_interface wayfire_control_impl =
     .keyup                   = keyup,
     .buttonstroke            = buttonstroke,
     .buttondown              = buttondown,
-    .buttonup                = buttonup
+    .buttonup                = buttonup,
+    .mousemove               = mousemove
 };
 
 static void destroy_client(wl_resource *resource)
