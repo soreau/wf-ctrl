@@ -145,8 +145,8 @@ WfCtrl::WfCtrl(int argc, char *argv[])
         { "resize",      required_argument, NULL, 'r' },
         { "maximize",    no_argument,       NULL, 'X' },
         { "unmaximize",  no_argument,       NULL, 'x' },
-        { "minimize",    no_argument,       NULL, 'N' },
-        { "unminimize",  no_argument,       NULL, 'n' },
+        { "minimize",    no_argument,       NULL, 'n' },
+        { "unminimize",  no_argument,       NULL, 'N' },
         { "focus",       no_argument,       NULL, 'f' },
         { "close",       no_argument,       NULL, 'c' },
         { "switch-ws",   required_argument, NULL, 'w' },
@@ -154,7 +154,7 @@ WfCtrl::WfCtrl(int argc, char *argv[])
     };
 
     int c, i;
-    while((c = getopt_long(argc, argv, "i:m:r:XxNnfcw:", opts, &i)) != -1)
+    while((c = getopt_long(argc, argv, "i:m:r:XxnNfcw:", opts, &i)) != -1)
     {
         switch(c)
         {
@@ -180,11 +180,11 @@ WfCtrl::WfCtrl(int argc, char *argv[])
                 request_mask |= REQUEST_UNMAXIMIZE;
                 break;
 
-            case 'N':
+            case 'n':
                 request_mask |= REQUEST_MINIMIZE;
                 break;
 
-            case 'n':
+            case 'N':
                 request_mask |= REQUEST_UNMINIMIZE;
                 break;
 
