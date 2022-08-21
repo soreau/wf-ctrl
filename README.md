@@ -29,10 +29,11 @@ $ wf-ctrl -i $(wf-info|grep "View ID"|awk '{print $3}') --minimize
 $ wf-ctrl -i xxxxxxxxx -i xxxxxxxxx -i xxxxxxxxx --switch-ws 1,0
 # Close focused view
 $ wf-ctrl -i -1 --close
-# Simulate key event (from [here](https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h) without the KEY_ prefix)
+# Simulate key event (from the linux input event codes header without the KEY_ prefix)
 $ wf-ctrl key -k A
 # Simulate button event (same as key but without the BTN_ prefix)
 $ wf-ctrl button -b LEFT
 # Move the mouse
 $ wf-ctrl mousemove -m 100,100
 ```
+[Linux Input Event Codes Header](https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h)
