@@ -46,4 +46,8 @@ class WfCtrl
     wl_display *display;
     wf_ctrl_base *wf_control_manager;
     int running;
+    void run();
 };
+
+void do_key(WfCtrl *, int argc, char *argv[]);
+void do_button(WfCtrl *, int argc, char *argv[]);

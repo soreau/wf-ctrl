@@ -70,8 +70,28 @@ static struct wf_ctrl_base_listener control_base_listener {
 	.ack = receive_ack,
 };
 
+static void print_help()
+{
+}
+
+void WfCtrl::run()
+{
+    running = 1;
+    while(running)
+        wl_display_dispatch(display);
+
+    wl_display_flush(display);
+    wl_display_disconnect(display);
+}
+
 WfCtrl::WfCtrl(int argc, char *argv[])
 {
+    if (argc < 2)
+    {
+        print_help();
+        return;
+    }
+
     display = wl_display_connect(NULL);
     if (!display)
     {
@@ -97,6 +117,12 @@ WfCtrl::WfCtrl(int argc, char *argv[])
 
     wf_ctrl_base_add_listener(wf_control_manager,
         &control_base_listener, this);
+
+    if (!strcmp(argv[1], "key"))
+    {
+        do_key(this, argc, argv);
+        return;
+    }
 
     std::vector<int> view_ids;
     int request_mask = 0;
@@ -170,6 +196,7 @@ WfCtrl::WfCtrl(int argc, char *argv[])
 
             default:
                 printf("Unsupported command line argument %s\n", optarg);
+                return;
         }
     }
 
@@ -209,12 +236,7 @@ WfCtrl::WfCtrl(int argc, char *argv[])
         }
     }
 
-    running = 1;
-    while(running)
-        wl_display_dispatch(display);
-
-    wl_display_flush(display);
-    wl_display_disconnect(display);
+    run();
 }
 
 WfCtrl::~WfCtrl()

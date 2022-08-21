@@ -41,6 +41,14 @@
 extern "C"
 {
 #include <wlr/types/wlr_seat.h>
+#include <wlr/backend/wayland.h>
+#include <wlr/backend/multi.h>
+#include <wlr/backend/headless.h>
+#include <wlr/types/wlr_pointer.h>
+#include <wlr/types/wlr_keyboard.h>
+#include <wlr/interfaces/wlr_keyboard.h>
+#include <wlr/types/wlr_output_layout.h>
+#include <libevdev/libevdev.h>
 }
 
 static void bind_manager(wl_client *client, void *data,
@@ -56,10 +64,26 @@ wayfire_control::wayfire_control()
         LOGE("Failed to create wayfire_control interface");
         return;
     }
+
+    auto& core = wf::get_core();
+    backend = wlr_headless_backend_create(core.display);
+    wlr_multi_backend_add(core.backend, backend);
+
+    pointer  = wlr_headless_add_input_device(backend, WLR_INPUT_DEVICE_POINTER);
+    keyboard = wlr_headless_add_input_device(backend, WLR_INPUT_DEVICE_KEYBOARD);
+
+    if (core.get_current_state() == wf::compositor_state_t::RUNNING)
+    {
+        wlr_backend_start(backend);
+    }
 }
 
 wayfire_control::~wayfire_control()
 {
+    auto& core = wf::get_core();
+    wlr_multi_backend_remove(core.backend, backend);
+    wlr_backend_destroy(backend);
+
     wl_global_destroy(manager);
 }
 
@@ -348,6 +372,93 @@ static void ws_switch_abs(struct wl_client *client, struct wl_resource *resource
     }
 }
 
+static void keystroke(struct wl_client *client, struct wl_resource *resource, const char *key, int delay)
+{
+    wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
+
+    int keycode = libevdev_event_code_from_name(EV_KEY, (std::string("KEY_") + key).c_str());
+    wlr_event_keyboard_key ev;
+
+    if (keycode == -1)
+    {
+        return;
+    }
+
+    ev.keycode = keycode;
+    ev.state   = WL_KEYBOARD_KEY_STATE_PRESSED;
+    ev.update_state = true;
+    ev.time_msec    = wf::get_current_time();
+
+    wlr_keyboard_notify_key(wd->keyboard->keyboard, &ev);
+
+    wd->keyboard_stroke_delay.set_timeout(delay, [=] ()
+    {
+        wlr_event_keyboard_key ev;
+        ev.keycode = keycode;
+        ev.state   = WL_KEYBOARD_KEY_STATE_RELEASED;
+        ev.update_state = true;
+        ev.time_msec    = wf::get_current_time();
+
+        wlr_keyboard_notify_key(wd->keyboard->keyboard, &ev);
+        return false;
+    });
+
+    for (auto r : wd->client_resources)
+    {
+        wf_ctrl_base_send_ack(r);
+    }
+}
+
+static void keydown(struct wl_client *client, struct wl_resource *resource, const char *key)
+{
+    wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
+
+    int keycode = libevdev_event_code_from_name(EV_KEY, (std::string("KEY_") + key).c_str());
+    wlr_event_keyboard_key ev;
+
+    if (keycode == -1)
+    {
+        return;
+    }
+
+    ev.keycode = keycode;
+    ev.state   = WL_KEYBOARD_KEY_STATE_PRESSED;
+    ev.update_state = true;
+    ev.time_msec    = wf::get_current_time();
+
+    wlr_keyboard_notify_key(wd->keyboard->keyboard, &ev);
+
+    for (auto r : wd->client_resources)
+    {
+        wf_ctrl_base_send_ack(r);
+    }
+}
+
+static void keyup(struct wl_client *client, struct wl_resource *resource, const char *key)
+{
+    wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
+
+    int keycode = libevdev_event_code_from_name(EV_KEY, (std::string("KEY_") + key).c_str());
+    wlr_event_keyboard_key ev;
+
+    if (keycode == -1)
+    {
+        return;
+    }
+
+    ev.keycode = keycode;
+    ev.state   = WL_KEYBOARD_KEY_STATE_RELEASED;
+    ev.update_state = true;
+    ev.time_msec    = wf::get_current_time();
+
+    wlr_keyboard_notify_key(wd->keyboard->keyboard, &ev);
+
+    for (auto r : wd->client_resources)
+    {
+        wf_ctrl_base_send_ack(r);
+    }
+}
+
 static const struct wf_ctrl_base_interface wayfire_control_impl =
 {
     .maximize                = maximize,
@@ -360,7 +471,10 @@ static const struct wf_ctrl_base_interface wayfire_control_impl =
     .resize                  = resize,
     .ws_switch_view_append   = ws_switch_view_append,
     .ws_switch               = ws_switch,
-    .ws_switch_abs           = ws_switch_abs
+    .ws_switch_abs           = ws_switch_abs,
+    .keystroke               = keystroke,
+    .keydown                 = keydown,
+    .keyup                   = keyup
 };
 
 static void destroy_client(wl_resource *resource)

@@ -29,4 +29,6 @@ $ wf-ctrl -i $(wf-info|grep "View ID"|awk '{print $3}') --minimize
 $ wf-ctrl -i xxxxxxxxx -i xxxxxxxxx -i xxxxxxxxx --switch-ws 1,0
 # Close focused view
 $ wf-ctrl -i -1 --close
+# Simulate key event (from [here](https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h) without the KEY_ prefix)
+$ wf-ctrl key -k A
 ```

@@ -112,6 +112,28 @@
       <arg name="y" type="int" summary="Y coordinate"/>
     </request>
 
+    <request name="keystroke">
+      <description summary="get information about the selected view">
+	Get information about the selected view.
+      </description>
+      <arg name="key" type="string" summary="key"/>
+      <arg name="delay" type="int" summary="delay"/>
+    </request>
+
+    <request name="keydown">
+      <description summary="get information about the selected view">
+	Get information about the selected view.
+      </description>
+      <arg name="key" type="string" summary="key"/>
+    </request>
+
+    <request name="keyup">
+      <description summary="get information about the selected view">
+	Get information about the selected view.
+      </description>
+      <arg name="key" type="string" summary="key"/>
+    </request>
+
     <event name="ack">
       <description summary="lets client know a request was received">
 	This lets the client know when to quit.

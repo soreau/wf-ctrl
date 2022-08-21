@@ -34,4 +34,9 @@ class wayfire_control
     std::vector<wayfire_view> fixed_views;
     wayfire_control();
     ~wayfire_control();
+
+    wlr_backend *backend;
+    wlr_input_device *pointer;
+    wlr_input_device *keyboard;
+    wf::wl_timer keyboard_stroke_delay;
 };
