@@ -113,6 +113,10 @@ static void maximize(struct wl_client *client, struct wl_resource *resource, int
 
     if (!view)
     {
+        for (auto r : wd->client_resources)
+        {
+            wf_ctrl_base_send_ack(r);
+        }
         return;
     }
 
@@ -131,6 +135,10 @@ static void unmaximize(struct wl_client *client, struct wl_resource *resource, i
 
     if (!view)
     {
+        for (auto r : wd->client_resources)
+        {
+            wf_ctrl_base_send_ack(r);
+        }
         return;
     }
 
@@ -149,6 +157,10 @@ static void minimize(struct wl_client *client, struct wl_resource *resource, int
 
     if (!view)
     {
+        for (auto r : wd->client_resources)
+        {
+            wf_ctrl_base_send_ack(r);
+        }
         return;
     }
 
@@ -167,6 +179,10 @@ static void unminimize(struct wl_client *client, struct wl_resource *resource, i
 
     if (!view)
     {
+        for (auto r : wd->client_resources)
+        {
+            wf_ctrl_base_send_ack(r);
+        }
         return;
     }
 
@@ -185,6 +201,10 @@ static void focus(struct wl_client *client, struct wl_resource *resource, int vi
 
     if (!view)
     {
+        for (auto r : wd->client_resources)
+        {
+            wf_ctrl_base_send_ack(r);
+        }
         return;
     }
 
@@ -192,6 +212,10 @@ static void focus(struct wl_client *client, struct wl_resource *resource, int vi
 
     if (!output)
     {
+        for (auto r : wd->client_resources)
+        {
+            wf_ctrl_base_send_ack(r);
+        }
         return;
     }
 
@@ -212,6 +236,10 @@ static void close(struct wl_client *client, struct wl_resource *resource, int vi
 
     if (!view)
     {
+        for (auto r : wd->client_resources)
+        {
+            wf_ctrl_base_send_ack(r);
+        }
         return;
     }
 
@@ -230,6 +258,10 @@ static void move(struct wl_client *client, struct wl_resource *resource, int vie
 
     if (!view)
     {
+        for (auto r : wd->client_resources)
+        {
+            wf_ctrl_base_send_ack(r);
+        }
         return;
     }
 
@@ -248,6 +280,10 @@ static void resize(struct wl_client *client, struct wl_resource *resource, int v
 
     if (!view)
     {
+        for (auto r : wd->client_resources)
+        {
+            wf_ctrl_base_send_ack(r);
+        }
         return;
     }
 
@@ -280,6 +316,10 @@ static void ws_switch(struct wl_client *client, struct wl_resource *resource, co
 
     if (!output)
     {
+        for (auto r : wd->client_resources)
+        {
+            wf_ctrl_base_send_ack(r);
+        }
         return;
     }
 
@@ -350,6 +390,10 @@ static void ws_switch_abs(struct wl_client *client, struct wl_resource *resource
 
     if (!output)
     {
+        for (auto r : wd->client_resources)
+        {
+            wf_ctrl_base_send_ack(r);
+        }
         return;
     }
 
@@ -381,6 +425,10 @@ static void keystroke(struct wl_client *client, struct wl_resource *resource, co
 
     if (keycode == -1)
     {
+        for (auto r : wd->client_resources)
+        {
+            wf_ctrl_base_send_ack(r);
+        }
         return;
     }
 
@@ -418,6 +466,10 @@ static void keydown(struct wl_client *client, struct wl_resource *resource, cons
 
     if (keycode == -1)
     {
+        for (auto r : wd->client_resources)
+        {
+            wf_ctrl_base_send_ack(r);
+        }
         return;
     }
 
@@ -443,6 +495,10 @@ static void keyup(struct wl_client *client, struct wl_resource *resource, const 
 
     if (keycode == -1)
     {
+        for (auto r : wd->client_resources)
+        {
+            wf_ctrl_base_send_ack(r);
+        }
         return;
     }
 
@@ -468,6 +524,10 @@ static void buttonstroke(struct wl_client *client, struct wl_resource *resource,
 
     if (buttoncode == -1)
     {
+        for (auto r : wd->client_resources)
+        {
+            wf_ctrl_base_send_ack(r);
+        }
         return;
     }
     ev.device    = wd->pointer;
@@ -504,6 +564,10 @@ static void buttondown(struct wl_client *client, struct wl_resource *resource, c
 
     if (buttoncode == -1)
     {
+        for (auto r : wd->client_resources)
+        {
+            wf_ctrl_base_send_ack(r);
+        }
         return;
     }
 
@@ -529,6 +593,10 @@ static void buttonup(struct wl_client *client, struct wl_resource *resource, con
 
     if (buttoncode == -1)
     {
+        for (auto r : wd->client_resources)
+        {
+            wf_ctrl_base_send_ack(r);
+        }
         return;
     }
 
