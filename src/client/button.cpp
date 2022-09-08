@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <getopt.h>
 #include <algorithm>
+#include <string>
 #include "wf-ctrl.hpp"
 
 void do_button(WfCtrl *wd, int argc, char *argv[])
