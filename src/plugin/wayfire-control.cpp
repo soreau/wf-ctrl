@@ -221,8 +221,6 @@ static void focus(struct wl_client *client, struct wl_resource *resource, int vi
 
     wf::get_core().focus_output(output);
     output->focus_view(view, true);
-    output->workspace->request_workspace(
-        output->workspace->get_view_main_workspace(view));
     for (auto r : wd->client_resources)
     {
         wf_ctrl_base_send_ack(r);
