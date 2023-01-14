@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Scott Moreau
+ * Copyright (c) 2023 Scott Moreau
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,9 +35,6 @@
 #include <linux/input-event-codes.h>
 #include <wayfire/util/log.hpp>
 
-#include "wayfire-control.hpp"
-#include "wayfire-control-server-protocol.h"
-
 extern "C"
 {
 #include <wlr/types/wlr_seat.h>
@@ -47,12 +44,30 @@ extern "C"
 #include <wlr/types/wlr_pointer.h>
 #include <wlr/types/wlr_keyboard.h>
 #include <wlr/interfaces/wlr_keyboard.h>
+#include <wlr/interfaces/wlr_pointer.h>
+#include <wlr/types/wlr_virtual_pointer_v1.h>
+#include <wlr/types/wlr_virtual_keyboard_v1.h>
 #include <wlr/types/wlr_output_layout.h>
 #include <libevdev/libevdev.h>
 }
 
+#include "wayfire-control.hpp"
+#include "wayfire-control-server-protocol.h"
+
 static void bind_manager(wl_client *client, void *data,
     uint32_t version, uint32_t id);
+
+static const struct wlr_pointer_impl pointer_impl = {
+    .name = "wf-control-pointer",
+};
+
+static void led_update(wlr_keyboard *keyboard, uint32_t leds)
+{}
+
+static const struct wlr_keyboard_impl keyboard_impl = {
+    .name = "wf-control-keyboard",
+    .led_update = led_update,
+};
 
 wayfire_control::wayfire_control()
 {
@@ -69,8 +84,8 @@ wayfire_control::wayfire_control()
     backend = wlr_headless_backend_create(core.display);
     wlr_multi_backend_add(core.backend, backend);
 
-    pointer  = wlr_headless_add_input_device(backend, WLR_INPUT_DEVICE_POINTER);
-    keyboard = wlr_headless_add_input_device(backend, WLR_INPUT_DEVICE_KEYBOARD);
+    wlr_pointer_init(&pointer, &pointer_impl, "wf_control_pointer");
+    wlr_keyboard_init(&keyboard, &keyboard_impl, "wf_control_keyboard");
 
     if (core.get_current_state() == wf::compositor_state_t::RUNNING)
     {
@@ -422,7 +437,7 @@ static void keystroke(struct wl_client *client, struct wl_resource *resource, co
     wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
 
     int keycode = libevdev_event_code_from_name(EV_KEY, (std::string("KEY_") + key).c_str());
-    wlr_event_keyboard_key ev;
+    wlr_keyboard_key_event ev;
 
     if (keycode == -1)
     {
@@ -438,17 +453,17 @@ static void keystroke(struct wl_client *client, struct wl_resource *resource, co
     ev.update_state = true;
     ev.time_msec    = wf::get_current_time();
 
-    wlr_keyboard_notify_key(wd->keyboard->keyboard, &ev);
+    wlr_keyboard_notify_key(&wd->keyboard, &ev);
 
     wd->keyboard_stroke_delay.set_timeout(delay, [=] ()
     {
-        wlr_event_keyboard_key ev;
+        wlr_keyboard_key_event ev;
         ev.keycode = keycode;
         ev.state   = WL_KEYBOARD_KEY_STATE_RELEASED;
         ev.update_state = true;
         ev.time_msec    = wf::get_current_time();
 
-        wlr_keyboard_notify_key(wd->keyboard->keyboard, &ev);
+        wlr_keyboard_notify_key(&wd->keyboard, &ev);
         return false;
     });
 
@@ -463,7 +478,7 @@ static void keydown(struct wl_client *client, struct wl_resource *resource, cons
     wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
 
     int keycode = libevdev_event_code_from_name(EV_KEY, (std::string("KEY_") + key).c_str());
-    wlr_event_keyboard_key ev;
+    wlr_keyboard_key_event ev;
 
     if (keycode == -1)
     {
@@ -479,7 +494,7 @@ static void keydown(struct wl_client *client, struct wl_resource *resource, cons
     ev.update_state = true;
     ev.time_msec    = wf::get_current_time();
 
-    wlr_keyboard_notify_key(wd->keyboard->keyboard, &ev);
+    wlr_keyboard_notify_key(&wd->keyboard, &ev);
 
     for (auto r : wd->client_resources)
     {
@@ -492,7 +507,7 @@ static void keyup(struct wl_client *client, struct wl_resource *resource, const 
     wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
 
     int keycode = libevdev_event_code_from_name(EV_KEY, (std::string("KEY_") + key).c_str());
-    wlr_event_keyboard_key ev;
+    wlr_keyboard_key_event ev;
 
     if (keycode == -1)
     {
@@ -508,7 +523,7 @@ static void keyup(struct wl_client *client, struct wl_resource *resource, const 
     ev.update_state = true;
     ev.time_msec    = wf::get_current_time();
 
-    wlr_keyboard_notify_key(wd->keyboard->keyboard, &ev);
+    wlr_keyboard_notify_key(&wd->keyboard, &ev);
 
     for (auto r : wd->client_resources)
     {
@@ -521,7 +536,7 @@ static void buttonstroke(struct wl_client *client, struct wl_resource *resource,
     wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
 
     int buttoncode = libevdev_event_code_from_name(EV_KEY, (std::string("BTN_") + button).c_str());
-    wlr_event_pointer_button ev;
+    wlr_pointer_button_event ev;
 
     if (buttoncode == -1)
     {
@@ -531,22 +546,22 @@ static void buttonstroke(struct wl_client *client, struct wl_resource *resource,
         }
         return;
     }
-    ev.device    = wd->pointer;
+    ev.pointer   = &wd->pointer;
     ev.button    = buttoncode;
     ev.state     = WLR_BUTTON_PRESSED;
     ev.time_msec = wf::get_current_time();
-    wl_signal_emit(&wd->pointer->pointer->events.button, &ev);
-    wl_signal_emit(&wd->pointer->pointer->events.frame, NULL);
+    wl_signal_emit(&wd->pointer.events.button, &ev);
+    wl_signal_emit(&wd->pointer.events.frame, NULL);
 
     wd->button_stroke_delay.set_timeout(delay, [=] ()
     {
-        wlr_event_pointer_button ev;
-        ev.device    = wd->pointer;
+        wlr_pointer_button_event ev;
+        ev.pointer   = &wd->pointer;
         ev.button    = buttoncode;
         ev.state     = WLR_BUTTON_RELEASED;
         ev.time_msec = wf::get_current_time();
-        wl_signal_emit(&wd->pointer->pointer->events.button, &ev);
-        wl_signal_emit(&wd->pointer->pointer->events.frame, NULL);
+        wl_signal_emit(&wd->pointer.events.button, &ev);
+        wl_signal_emit(&wd->pointer.events.frame, NULL);
         return false;
     });
 
@@ -561,7 +576,7 @@ static void buttondown(struct wl_client *client, struct wl_resource *resource, c
     wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
 
     int buttoncode = libevdev_event_code_from_name(EV_KEY, (std::string("BTN_") + button).c_str());
-    wlr_event_pointer_button ev;
+    wlr_pointer_button_event ev;
 
     if (buttoncode == -1)
     {
@@ -572,12 +587,12 @@ static void buttondown(struct wl_client *client, struct wl_resource *resource, c
         return;
     }
 
-    ev.device    = wd->pointer;
+    ev.pointer   = &wd->pointer;
     ev.button    = buttoncode;
     ev.state     = WLR_BUTTON_PRESSED;
     ev.time_msec = wf::get_current_time();
-    wl_signal_emit(&wd->pointer->pointer->events.button, &ev);
-    wl_signal_emit(&wd->pointer->pointer->events.frame, NULL);
+    wl_signal_emit(&wd->pointer.events.button, &ev);
+    wl_signal_emit(&wd->pointer.events.frame, NULL);
 
     for (auto r : wd->client_resources)
     {
@@ -590,7 +605,7 @@ static void buttonup(struct wl_client *client, struct wl_resource *resource, con
     wayfire_control *wd = (wayfire_control*)wl_resource_get_user_data(resource);
 
     int buttoncode = libevdev_event_code_from_name(EV_KEY, (std::string("BTN_") + button).c_str());
-    wlr_event_pointer_button ev;
+    wlr_pointer_button_event ev;
 
     if (buttoncode == -1)
     {
@@ -601,12 +616,12 @@ static void buttonup(struct wl_client *client, struct wl_resource *resource, con
         return;
     }
 
-    ev.device    = wd->pointer;
+    ev.pointer   = &wd->pointer;
     ev.button    = buttoncode;
     ev.state     = WLR_BUTTON_RELEASED;
     ev.time_msec = wf::get_current_time();
-    wl_signal_emit(&wd->pointer->pointer->events.button, &ev);
-    wl_signal_emit(&wd->pointer->pointer->events.frame, NULL);
+    wl_signal_emit(&wd->pointer.events.button, &ev);
+    wl_signal_emit(&wd->pointer.events.frame, NULL);
 
     for (auto r : wd->client_resources)
     {
@@ -620,13 +635,13 @@ static void mousemove(struct wl_client *client, struct wl_resource *resource, in
 
     auto cursor = wf::get_core().get_cursor_position();
 
-    wlr_event_pointer_motion ev;
-    ev.device    = wd->pointer;
+    wlr_pointer_motion_event ev;
+    ev.pointer   = &wd->pointer;
     ev.time_msec = wf::get_current_time();
     ev.delta_x   = ev.unaccel_dx = x - cursor.x;
     ev.delta_y   = ev.unaccel_dy = y - cursor.y;
-    wl_signal_emit(&wd->pointer->pointer->events.motion, &ev);
-    wl_signal_emit(&wd->pointer->pointer->events.frame, NULL);
+    wl_signal_emit(&wd->pointer.events.motion, &ev);
+    wl_signal_emit(&wd->pointer.events.frame, NULL);
 
     for (auto r : wd->client_resources)
     {

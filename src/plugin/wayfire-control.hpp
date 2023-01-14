@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Scott Moreau
+ * Copyright (c) 2023 Scott Moreau
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,8 @@ class wayfire_control
     ~wayfire_control();
 
     wlr_backend *backend;
-    wlr_input_device *pointer;
-    wlr_input_device *keyboard;
+    wlr_pointer pointer;
+    wlr_keyboard keyboard;
     wf::wl_timer keyboard_stroke_delay;
     wf::wl_timer button_stroke_delay;
 };

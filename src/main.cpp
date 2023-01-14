@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Scott Moreau
+ * Copyright (c) 2023 Scott Moreau
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,28 +24,25 @@
 
 
 #include <wayfire/plugin.hpp>
-#include <wayfire/singleton-plugin.hpp>
 #include <wayfire/signal-definitions.hpp>
 #include <wayfire/util/log.hpp>
 
 #include "plugin/wayfire-control.hpp"
 
-class wf_ctrl
+class wf_ctrl : public wf::plugin_interface_t
 {
   public:
     std::unique_ptr<wayfire_control> wayfire_control_ptr = nullptr;
 
-    wf_ctrl()
+    void init()
     {
         wayfire_control_ptr = std::make_unique<wayfire_control>();
     }
 
-    ~wf_ctrl()
+    void fini()
     {
         wayfire_control_ptr.reset();
     }
 };
 
-class wf_ctrl_singleton : public wf::singleton_plugin_t<wf_ctrl> {};
-
-DECLARE_WAYFIRE_PLUGIN(wf_ctrl_singleton);
+DECLARE_WAYFIRE_PLUGIN(wf_ctrl);
